@@ -7,14 +7,13 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\HomeController;
 
 // ==================== RUTAS PÚBLICAS ====================
-
 // Página de bienvenida - redirige a publicaciones
 Route::get('/', function () {
     return redirect()->route('posts.index');
 });
 
 // ==================== RUTAS DE AUTENTICACIÓN (Laravel UI) ====================
-
+// sergio ponce :v
 // Rutas de autenticación generadas por Laravel UI (login, register, etc.)
 Auth::routes();
 
