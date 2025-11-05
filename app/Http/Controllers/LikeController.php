@@ -1,5 +1,8 @@
 <?php
 
+// Autor: Cesar Kana Huillcapacco
+// Controlador para manejo de "likes" en posts y comentarios
+
 namespace App\Http\Controllers;
 
 use App\Models\Post;
