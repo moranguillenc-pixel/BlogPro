@@ -9,12 +9,25 @@ class Post extends Model
 {
     use HasFactory;
 
-    // Campos que se pueden asignar masivamente
-    protected $fillable = ['title', 'content', 'user_id'];
+    protected $fillable = ['title', 'content', 'user_id']; // ← Asegúrate que 'title' está aquí
 
-    // Relación: cada post pertenece a un usuario
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    public function likedBy(User $user)
+    {
+        return $this->likes()->where('user_id', $user->id)->exists();
     }
 }
