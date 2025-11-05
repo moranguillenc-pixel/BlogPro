@@ -13,7 +13,7 @@ Route::get('/', function () {
 });
 
 // ==================== RUTAS DE AUTENTICACIÓN (Laravel UI) ====================
-// sergio ponce :v
+// sergio ponce :v soy chechito profe
 // Rutas de autenticación generadas por Laravel UI (login, register, etc.)
 Auth::routes();
 
