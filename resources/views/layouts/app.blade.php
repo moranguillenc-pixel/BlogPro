@@ -41,8 +41,8 @@
         .hero-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 3rem 0;
-            margin-bottom: 2rem;
+            padding: 2rem 0;
+            margin-bottom: 0;
         }
 
         .post-card {
@@ -82,6 +82,63 @@
         .shadow-hover {
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
+
+        /* Tabs Styles */
+        .nav-tabs-custom {
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .nav-tabs-custom .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs-custom .nav-link:hover {
+            border: none;
+            color: #495057;
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            border: none;
+            border-bottom: 3px solid #667eea;
+            color: #667eea;
+            background: transparent;
+            font-weight: 600;
+        }
+
+        .tab-pane {
+            padding: 2rem 0;
+        }
+
+        /* Filter Styles */
+        .filter-group .form-check {
+            margin-right: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-group .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .comment-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -91,28 +148,36 @@
             <a class="navbar-brand fw-bold" href="{{ url('/') }}">
                 <i class="fas fa-blog me-2"></i>BlogPro
             </a>
-            
-            <!-- Auth Links -->
-            <div class="navbar-nav ms-auto">
-                @if (Route::has('login'))
-                    <div class="nav-item">
-                        @auth
-                            <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
-                            <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                @csrf
-                                <a href="{{ route('logout') }}" class="nav-link" 
-                                   onclick="event.preventDefault(); this.closest('form').submit();">
-                                    Cerrar Sesión
-                                </a>
-                            </form>
-                        @else
-                            <a href="{{ route('login') }}" class="nav-link">Iniciar Sesión</a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="nav-link">Registrarse</a>
-                            @endif
-                        @endauth
-                    </div>
-                @endif
+
+            <!-- Navigation Links -->
+            <div class="navbar-nav ms-auto flex-row">
+                @auth
+                    <a href="{{ route('posts.index') }}" class="nav-link me-3">
+                        <i class="fas fa-home me-1"></i>Inicio
+                    </a>
+                    <a href="{{ route('notas.index') }}" class="nav-link me-3">
+                        <i class="fas fa-sticky-note me-1"></i>Notas
+                    </a>
+                    <span class="nav-link me-3 text-light">
+                        <i class="fas fa-user me-1"></i>{{ Auth::user()->name }}
+                    </span>
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        @csrf
+                        <a href="{{ route('logout') }}" class="nav-link d-inline" 
+                           onclick="event.preventDefault(); this.closest('form').submit();">
+                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                        </a>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="nav-link me-3">
+                        <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                    </a>
+                    @if (Route::has('register'))
+                        <a href="{{ route('register') }}" class="nav-link">
+                            <i class="fas fa-user-plus me-1"></i>Registrarse
+                        </a>
+                    @endif
+                @endauth
             </div>
         </div>
     </nav>
@@ -123,11 +188,11 @@
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h1 class="display-5 fw-bold">@yield('hero-title', 'Publicaciones Profesionales')</h1>
-                    <p class="lead">@yield('hero-subtitle', 'Comparte tus ideas y conecta con la comunidad')</p>
+                    <p class="lead mb-0">@yield('hero-subtitle', 'Comparte tus ideas y conecta con la comunidad')</p>
                 </div>
                 <div class="col-md-4 text-end">
                     @auth
-                    <a href="{{ route('posts.create') }}" class="btn btn-light btn-lg btn-create">
+                    <a href="{{ route('posts.create') }}" class="btn btn-light btn-lg rounded-pill px-4">
                         <i class="fas fa-plus me-2"></i>Nueva Publicación
                     </a>
                     @endauth
@@ -137,14 +202,14 @@
     </div>
 
     <!-- Main Content -->
-    <main class="container">
+    <main class="container py-4">
         @yield('content')
     </main>
 
     <!-- Footer -->
     <footer class="bg-dark text-white py-4 mt-5">
         <div class="container text-center">
-            <p>&copy; 2024 BlogPro. Todos los derechos reservados.</p>
+            <p class="mb-0">&copy; 2024 BlogPro. Todos los derechos reservados.</p>
         </div>
     </footer>
 
@@ -158,6 +223,82 @@
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             })
+
+            // Tab functionality
+            function switchTab(tabName) {
+                // Hide all tab panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+                
+                // Remove active class from all nav links
+                document.querySelectorAll('.nav-tabs-custom .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                // Show selected tab pane and activate nav link
+                document.getElementById('content-' + tabName).classList.add('show', 'active');
+                document.getElementById('tab-' + tabName).classList.add('active');
+            }
+
+            // Make switchTab function globally available
+            window.switchTab = switchTab;
+
+            // Toggle comment sections
+            window.toggleComment = function(postId) {
+                const commentsSection = document.getElementById('comments-' + postId);
+                if (commentsSection) {
+                    commentsSection.classList.toggle('d-none');
+                }
+            }
+
+            // Filter functionality
+            document.querySelectorAll('input[name="filter"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const filter = this.value;
+                    // Implement filtering logic here
+                    console.log('Filtrar por:', filter);
+                    
+                    // You can add AJAX requests or page reload with parameters
+                    switch(filter) {
+                        case 'populares':
+                            // Filter by popularity (likes)
+                            filterByPopularity();
+                            break;
+                        case 'recientes':
+                            // Filter by recent
+                            filterByRecent();
+                            break;
+                        case 'siguiendo':
+                            // Filter by following
+                            filterByFollowing();
+                            break;
+                        default:
+                            // Show all
+                            showAllPosts();
+                    }
+                });
+            });
+
+            function filterByPopularity() {
+                // Sort posts by likes count (you'll need to implement this)
+                alert('Filtrando por publicaciones populares');
+            }
+
+            function filterByRecent() {
+                // Sort posts by creation date
+                alert('Filtrando por publicaciones recientes');
+            }
+
+            function filterByFollowing() {
+                // Show posts from followed users
+                alert('Filtrando por usuarios que sigues');
+            }
+
+            function showAllPosts() {
+                // Show all posts
+                alert('Mostrando todas las publicaciones');
+            }
         });
     </script>
     

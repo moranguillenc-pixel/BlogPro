@@ -5,6 +5,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotaController;
 
 // ==================== RUTAS PÚBLICAS ====================
 // Página de bienvenida - redirige a publicaciones
@@ -13,7 +14,6 @@ Route::get('/', function () {
 });
 
 // ==================== RUTAS DE AUTENTICACIÓN (Laravel UI) ====================
-// sergio ponce :v soy chechito profe
 // Rutas de autenticación generadas por Laravel UI (login, register, etc.)
 Auth::routes();
 
@@ -42,6 +42,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/posts/search', [PostController::class, 'search'])
         ->name('posts.search');
 
+    // Rutas adicionales para posts
+    Route::post('/posts/toggle-like', [PostController::class, 'toggleLike'])->name('posts.toggleLike');
+    Route::post('/posts/toggle-like-post', [PostController::class, 'toggleLikePost'])->name('posts.toggleLikePost');
+    Route::get('/posts/filter/{filter}', [PostController::class, 'filter'])->name('posts.filter');
+    Route::get('/posts/stats', [PostController::class, 'getStats'])->name('posts.stats');
+    Route::get('/debug/post/{id}', [PostController::class, 'debugPost'])->name('posts.debug');
+
     // ========== RUTAS DE COMENTARIOS ==========
     
     Route::prefix('posts/{post}')->group(function () {
@@ -57,6 +64,37 @@ Route::middleware(['auth'])->group(function () {
     
     Route::post('/likes/toggle', [LikeController::class, 'toggle'])
         ->name('likes.toggle');
+
+    // ========== RUTAS DEL SISTEMA DE NOTAS (LABORATORIO 13) ==========
+    
+    // Listar todas las notas
+    Route::get('/notas', [NotaController::class, 'index'])
+        ->name('notas.index');
+    
+    // Ruta para cargar notas en pestañas
+    Route::get('/notas/load-for-tabs', [NotaController::class, 'loadNotesForTabs'])
+        ->name('notas.load-for-tabs');
+    
+    // Crear nueva nota
+    Route::post('/notas', [NotaController::class, 'store'])
+        ->name('notas.store');
+    
+    // Opcional: Rutas adicionales para el CRUD completo de notas
+    Route::get('/notas/create', [NotaController::class, 'create'])
+        ->name('notas.create');
+    
+    Route::get('/notas/{nota}/edit', [NotaController::class, 'edit'])
+        ->name('notas.edit');
+    
+    Route::put('/notas/{nota}', [NotaController::class, 'update'])
+        ->name('notas.update');
+    
+    Route::delete('/notas/{nota}', [NotaController::class, 'destroy'])
+        ->name('notas.destroy');
+    
+    // Marcar recordatorio como completado
+    Route::post('/notas/{nota}/completar', [NotaController::class, 'completar'])
+        ->name('notas.completar');
 
 });
 
@@ -106,6 +144,61 @@ Route::get('/check-posts-table', function() {
                     'content' => $post->content,
                     'user_id' => $post->user_id,
                     'created_at' => $post->created_at
+                ];
+            })
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+});
+
+// Debug para verificar las tablas de notas
+Route::get('/check-notas-tables', function() {
+    try {
+        $notasColumns = \Illuminate\Support\Facades\Schema::getColumnListing('notas');
+        $recordatoriosColumns = \Illuminate\Support\Facades\Schema::getColumnListing('recordatorios');
+        
+        $notasCount = \App\Models\Nota::count();
+        $recordatoriosCount = \App\Models\Recordatorio::count();
+        
+        return response()->json([
+            'success' => true,
+            'notas_table' => [
+                'columns' => $notasColumns,
+                'count' => $notasCount
+            ],
+            'recordatorios_table' => [
+                'columns' => $recordatoriosColumns,
+                'count' => $recordatoriosCount
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+});
+
+// Debug para verificar usuarios y relaciones
+Route::get('/check-users-notes', function() {
+    try {
+        $users = \App\Models\User::withCount('notas')->get();
+        $usersWithNotes = \App\Models\User::has('notas')->count();
+        
+        return response()->json([
+            'success' => true,
+            'total_users' => $users->count(),
+            'users_with_notes' => $usersWithNotes,
+            'users_data' => $users->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'notas_count' => $user->notas_count,
+                    'has_notes_relationship' => method_exists($user, 'notas') ? 'YES' : 'NO'
                 ];
             })
         ]);

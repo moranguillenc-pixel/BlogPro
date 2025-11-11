@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Comment;
+use App\Models\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -229,5 +230,108 @@ class PostController extends Controller
             'updated_at' => $post->updated_at
         ]);
     }
-    
+
+    /**
+     * Toggle like para publicación (método alternativo para el formulario tradicional)
+     */
+    public function toggleLikePost(Request $request)
+    {
+        $request->validate([
+            'post_id' => 'required|exists:posts,id'
+        ]);
+
+        $user = Auth::user();
+        $post = Post::findOrFail($request->post_id);
+
+        $existingLike = Like::where('user_id', $user->id)
+                           ->where('likeable_id', $post->id)
+                           ->where('likeable_type', Post::class)
+                           ->first();
+
+        if ($existingLike) {
+            // Si ya existe el like, lo eliminamos (toggle off)
+            $existingLike->delete();
+            $liked = false;
+            $message = 'Like removido';
+        } else {
+            // Si no existe, creamos el like (toggle on)
+            Like::create([
+                'user_id' => $user->id,
+                'likeable_id' => $post->id,
+                'likeable_type' => Post::class
+            ]);
+            $liked = true;
+            $message = 'Like agregado';
+        }
+
+        // Obtener el nuevo conteo de likes
+        $likesCount = $post->likes()->count();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'liked' => $liked,
+                'likes_count' => $likesCount,
+                'message' => $message
+            ]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Filtrar publicaciones por tipo (populares, recientes, etc.)
+     */
+    public function filter(Request $request)
+    {
+        $filter = $request->get('filter', 'todos');
+        
+        $posts = Post::with(['user', 'comments.user', 'likes'])
+                    ->withCount(['comments', 'likes']);
+
+        switch ($filter) {
+            case 'populares':
+                $posts->orderBy('likes_count', 'desc');
+                break;
+            case 'recientes':
+                $posts->latest();
+                break;
+            case 'siguiendo':
+                // Aquí puedes implementar la lógica para usuarios seguidos
+                $followingIds = Auth::check() ? Auth::user()->following()->pluck('id') : [];
+                $posts->whereIn('user_id', $followingIds)->latest();
+                break;
+            default:
+                $posts->latest();
+                break;
+        }
+
+        $posts = $posts->paginate(6);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('posts.partials.posts-grid', compact('posts'))->render()
+            ]);
+        }
+
+        return view('posts.index', compact('posts', 'filter'));
+    }
+
+    /**
+     * Obtener estadísticas de publicaciones (para el tab de estadísticas)
+     */
+    public function getStats()
+    {
+        $stats = [
+            'total_posts' => Post::count(),
+            'total_comments' => Comment::count(),
+            'total_likes' => Like::count(),
+            'posts_today' => Post::whereDate('created_at', today())->count(),
+            'popular_posts' => Post::withCount('likes')
+                                 ->orderBy('likes_count', 'desc')
+                                 ->take(5)
+                                 ->get()
+        ];
+
+        return response()->json($stats);
+    }
 }
