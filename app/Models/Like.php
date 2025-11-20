@@ -17,6 +17,8 @@ class Like extends Model
         return $this->belongsTo(User::class);
     }
 
+    // Adrian Flores
+
     // Relación polimórfica
     public function likeable()
     {
