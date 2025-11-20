@@ -86,7 +86,7 @@ class Actividad extends Model
         return $query->where('prioridad', $prioridad);
     }
 
-    /*Adrian Flores
+    //Adrian Flores
 
     /**
      * Scope para actividades del usuario autenticado.
