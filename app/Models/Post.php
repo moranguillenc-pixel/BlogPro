@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Post extends Model
 {
@@ -12,25 +15,25 @@ class Post extends Model
     protected $fillable = ['title', 'content', 'user_id'];
 
     // Relación con el usuario
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     // Relación con comentarios
-    public function comments()
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
     }
 
     // Relación polimórfica con likes
-    public function likes()
+    public function likes(): MorphMany
     {
         return $this->morphMany(Like::class, 'likeable');
     }
 
-    // Método para verificar si un usuario dio like (combinado)
-    public function isLikedBy($user)
+    // Método para verificar si un usuario dio like
+    public function isLikedBy($user): bool
     {
         if (!$user) {
             return false;
@@ -40,19 +43,19 @@ class Post extends Model
     }
 
     // Método likedBy (alias para compatibilidad)
-    public function likedBy(User $user)
+    public function likedBy(User $user): bool
     {
         return $this->isLikedBy($user);
     }
 
-    // Contador de likes
-    public function likesCount()
+    // Contador de likes (atributo de acceso)
+    public function getLikesCountAttribute(): int
     {
         return $this->likes()->count();
     }
 
-    // Contador de comentarios
-    public function commentsCount()
+    // Contador de comentarios (atributo de acceso)
+    public function getCommentsCountAttribute(): int
     {
         return $this->comments()->count();
     }

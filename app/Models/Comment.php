@@ -40,8 +40,44 @@ class Comment extends Model
     /**
      * Helper: ¿El usuario ya dio like a este comentario?
      */
+    public function isLikedBy(User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        return $this->likes()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Método likedBy (alias para compatibilidad)
+     */
     public function likedBy(User $user): bool
     {
-        return $this->likes()->where('user_id', $user->id)->exists();
+        return $this->isLikedBy($user);
+    }
+
+    /**
+     * Contador de likes (atributo de acceso)
+     */
+    public function getLikesCountAttribute(): int
+    {
+        return $this->likes()->count();
+    }
+
+    /**
+     * Scope para comentarios recientes
+     */
+    public function scopeRecent($query)
+    {
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Cargar relaciones comúnmente usadas
+     */
+    public function loadCommonRelations()
+    {
+        return $this->load(['user', 'post', 'likes'])
+                   ->loadCount('likes');
     }
 }

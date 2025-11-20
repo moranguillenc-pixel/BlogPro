@@ -139,6 +139,52 @@
             border-radius: 10px;
             padding: 1rem;
         }
+
+        /* CORRECCIÓN DE TAMAÑO DE ICONOS */
+        .navbar-nav .fas,
+        .navbar-nav .far,
+        .navbar-nav .fab {
+            font-size: 1rem !important;
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+
+        .btn .fas,
+        .btn .far,
+        .btn .fab {
+            font-size: 0.9rem !important;
+        }
+
+        .navbar-brand .fas {
+            font-size: 1.3rem !important;
+        }
+
+        /* Asegurar que todos los iconos tengan tamaño consistente */
+        .fas, .far, .fab {
+            font-size: 1rem;
+            width: 1rem;
+            height: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Iconos en navegación */
+        .nav-link .fas,
+        .nav-link .far,
+        .nav-link .fab {
+            font-size: 0.9rem;
+            width: 1rem;
+            margin-right: 0.3rem;
+        }
+
+        /* Iconos en botones */
+        .btn .fas,
+        .btn .far,
+        .btn .fab {
+            font-size: 0.9rem;
+            width: 1rem;
+        }
     </style>
 </head>
 <body>
