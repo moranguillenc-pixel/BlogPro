@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
+    /** ESta parte hecha x sergio ponce
      * The current password being used by the factory.
      */
     protected static ?string $password;
